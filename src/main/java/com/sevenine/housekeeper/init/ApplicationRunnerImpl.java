@@ -1,5 +1,7 @@
 package com.sevenine.housekeeper.init;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sevenine.housekeeper.config.Person;
 import com.sevenine.housekeeper.dto.FundDataDTO;
 import com.sevenine.housekeeper.dto.ResponseDTO;
@@ -54,7 +56,10 @@ public class ApplicationRunnerImpl implements ApplicationRunner {
         ResponseEntity<String> resEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
         String body = resEntity.getBody();
 //        System.out.println("body = " + body);
-        ResponseDTO responseDTO = JsonUtil.string2Obj(body, ResponseDTO.class);
+        // 全局配置 ObjectMapper（适用于所有反序列化操作）
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ResponseDTO responseDTO = objectMapper.readValue(body, ResponseDTO.class);
         List<FundDataDTO> items = responseDTO.getData().getItems();
         items = filter(items);
         sendPlan(items);
